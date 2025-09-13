@@ -1,0 +1,33 @@
+### Register a new user
+POST http://localhost:5027/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Harsh More",
+  "email": "harsh@example.com",
+  "phone": "9999999999",
+  "password": "test1234"
+}
+
+###
+
+### Login
+POST http://localhost:5027/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "harsh@example.com",
+  "password": "test1234"
+}
+
+###
+
+### Get Profile (protected route)
+GET http://localhost:5027/api/profile
+Content-Type: application/json
+
+###
+
+### Logout
+POST http://localhost:5027/api/auth/logout
+Content-Type: application/json

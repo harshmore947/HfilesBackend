@@ -1,0 +1,41 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+
+# Environment variables
+.env
+appsettings.Local.json
+
+# Database
+*.db
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Azure
+local.settings.json
+
+# Temporary files
+*.tmp
+*.temp
+
+# Uploaded files (optional - remove if you want to track them)
+wwwroot/files/
+wwwroot/images/

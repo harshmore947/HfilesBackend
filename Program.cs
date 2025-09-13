@@ -16,7 +16,12 @@ if (builder.Environment.IsDevelopment())
 }
 
 // Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+// In Azure App Service, connection strings are available through environment variables
+// with the format SQLCONNSTR_<name> for SQL databases or CUSTOMCONNSTR_<name> for custom
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+                      Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection") ??
+                      Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection") ?? "";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
   if (!string.IsNullOrEmpty(connectionString))
@@ -31,7 +36,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 //Azure
-var azureConnectionString = builder.Configuration["AzureStorage:ConnectionString"];
+// Try multiple sources for Azure connection string
+var azureConnectionString = builder.Configuration["AzureStorage:ConnectionString"] ??
+                           Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureStorage") ??
+                           Environment.GetEnvironmentVariable("AzureStorage_ConnectionString") ?? "";
+
 if (!string.IsNullOrEmpty(azureConnectionString))
 {
   builder.Services.AddSingleton(new BlobServiceClient(azureConnectionString));

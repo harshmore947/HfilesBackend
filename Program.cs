@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add local settings file for development
 if (builder.Environment.IsDevelopment())
 {
-    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+  builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 }
 
 // Database
@@ -15,7 +15,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //Azure
-builder.Services.AddSingleton(new BlobServiceClient(builder.Configuration["AzureStorage:ConnectionString"]));
+var azureConnectionString = builder.Configuration["AzureStorage:ConnectionString"];
+if (!string.IsNullOrEmpty(azureConnectionString))
+{
+    builder.Services.AddSingleton(new BlobServiceClient(azureConnectionString));
+}
 
 // Session
 builder.Services.AddDistributedMemoryCache();
@@ -40,23 +44,43 @@ builder.Services.AddControllers();
 // Add CORS policy
 builder.Services.AddCors(options =>
 {
-  options.AddDefaultPolicy(builder =>
+  options.AddDefaultPolicy(corsBuilder =>
   {
-    builder.WithOrigins("http://localhost:3000")
-             .AllowAnyMethod()
-             .AllowAnyHeader()
-             .AllowCredentials();
+    if (builder.Environment.IsDevelopment())
+    {
+      corsBuilder.WithOrigins("http://localhost:3000", "https://localhost:3000")
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    }
+    else
+    {
+      corsBuilder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    }
   });
 });
 
 var app = builder.Build();
+
+// Add error handling for production
+if (app.Environment.IsProduction())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
 app.UseStaticFiles();  // Add this to serve static files
 if (!app.Environment.IsDevelopment())
 {
   app.UseHttpsRedirection();
 }
-app.MapGet("/", () => "hello");
+app.MapGet("/", () => "Hello from Medical Records API!");
 
 app.UseCors();  // Enable CORS
 app.UseRouting();

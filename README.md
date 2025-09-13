@@ -2,15 +2,33 @@
 
 This API provides endpoints for user authentication, profile management, and medical file uploads using ASP.NET Core, PostgreSQL, and Azure Blob Storage.
 
-## Base URL
+## Base URLs
+
+**Production (Azure):**
 
 ```
+https://hfilesbackend01-btawhse6hjbtfrd2.eastus-01.azurewebsites.net
+```
+
+**Development (Local):**
+
+```
+https://localhost:7280
 http://localhost:5027
 ```
 
 ## Authentication
 
 All endpoints except registration require session-based authentication. Login first to establish a session.
+
+**Important for Cross-Origin Requests:**
+
+- The API supports CORS for these origins:
+  - `http://localhost:3000` (local development)
+  - `https://localhost:3000` (local development with HTTPS)
+  - `https://hfiles-frontend-inky.vercel.app` (production frontend)
+- Use `credentials: 'include'` in fetch or `withCredentials: true` in Axios
+- Session cookies use `SameSite=None; Secure` for cross-site compatibility
 
 ## Endpoints
 
@@ -62,7 +80,7 @@ All endpoints except registration require session-based authentication. Login fi
     "email": "john@example.com",
     "phone": "1234567890",
     "gender": "Male",
-    "profileImageUrl": "https://via.placeholder.com/150x150/cccccc/666666?text=User"
+    "profileImageUrl": "https://ui-avatars.com/api/?name=John%20Doe&background=6366f1&color=ffffff&size=150"
   }
   ```
 
@@ -134,9 +152,53 @@ All endpoints except registration require session-based authentication. Login fi
 
 ## Setup
 
-1. Configure PostgreSQL and Azure Blob Storage in `appsettings.json`.
-2. Run migrations: `dotnet ef database update`.
-3. Start the app: `dotnet run`.
+1. **Azure Configuration**: Set these environment variables or app settings:
+
+   - `CUSTOMCONNSTR_DefaultConnection`: PostgreSQL connection string
+   - `CUSTOMCONNSTR_AzureStorage`: Azure Blob Storage connection string
+   - `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed frontend origins
+
+2. **Local Development**: Configure in `appsettings.Local.json`:
+
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Host=localhost;Database=hfiles;Username=user;Password=pass"
+     },
+     "AzureStorage": {
+       "ConnectionString": "your-azure-storage-connection-string",
+       "ContainerName": "hfiles"
+     }
+   }
+   ```
+
+3. Run migrations: `dotnet ef database update`
+4. Start the app: `dotnet run`
+
+## Frontend Integration
+
+**For JavaScript/TypeScript frontends:**
+
+```javascript
+// Login example
+const response = await fetch(
+  "https://hfilesbackend01-btawhse6hjbtfrd2.eastus-01.azurewebsites.net/api/auth/login",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // Essential for cookies
+    body: JSON.stringify({ email: "user@example.com", password: "password" }),
+  }
+);
+
+// Subsequent authenticated requests
+const profile = await fetch(
+  "https://hfilesbackend01-btawhse6hjbtfrd2.eastus-01.azurewebsites.net/api/profile",
+  {
+    credentials: "include",
+  }
+);
+```
 
 ## Technologies
 

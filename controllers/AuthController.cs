@@ -21,25 +21,36 @@ namespace HFilesBackend.Controllers
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-      if (await _db.Users.AnyAsync(user => user.Email == dto.Email))
+      try
       {
-        return BadRequest(new { error = "Email already exists" });//400
+        if (await _db.Users.AnyAsync(user => user.Email == dto.Email))
+        {
+          return BadRequest(new { error = "Email already exists" });//400
+        }
+
+        // Normalize gender input
+        var normalizedGender = string.IsNullOrEmpty(dto.Gender) ? "Male" : 
+                              char.ToUpper(dto.Gender[0]) + dto.Gender.Substring(1).ToLower();
+
+        var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        var user = new User
+        {
+          FullName = dto.FullName,
+          Email = dto.Email,
+          Phone = dto.phone,
+          PasswordHash = hashed,
+          Gender = normalizedGender,
+          ProfileImageUrl = dto.ProfileImageUrl ?? "https://via.placeholder.com/150x150/cccccc/666666?text=User"
+        };
+
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+        return Ok(new { message = "Registered" }); //200
       }
-
-      var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-      var user = new User
+      catch (Exception ex)
       {
-        FullName = dto.FullName,
-        Email = dto.Email,
-        Phone = dto.phone,
-        PasswordHash = hashed,
-        Gender = dto.Gender,
-        ProfileImageUrl = dto.ProfileImageUrl ?? "https://via.placeholder.com/150x150/cccccc/666666?text=User"
-      };
-
-      _db.Users.Add(user);
-      await _db.SaveChangesAsync();
-      return Ok(new { message = "Registered" }); //200
+        return StatusCode(500, new { error = "Registration failed", details = ex.Message });
+      }
     }
 
     [HttpPost("login")]

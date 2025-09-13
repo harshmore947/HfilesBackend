@@ -10,7 +10,7 @@ namespace HFilesBackend.Models
     public string? Phone { get; set; }
     [Required] public string PasswordHash { get; set; } = "";
     [Required]
-    [RegularExpression("Male|Female", ErrorMessage = "Gender must be 'Male' or 'Female'.")]
+    [RegularExpression("(?i)^(Male|Female)$", ErrorMessage = "Gender must be 'Male' or 'Female'.")]
     public string Gender { get; set; } = "Male";
     public string ProfileImageUrl { get; set; } = "https://via.placeholder.com/150x150/cccccc/666666?text=User";
   }

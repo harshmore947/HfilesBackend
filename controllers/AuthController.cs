@@ -23,13 +23,23 @@ namespace HFilesBackend.Controllers
     {
       try
       {
+        // Test database connection first
+        try
+        {
+          await _db.Database.CanConnectAsync();
+        }
+        catch (Exception dbEx)
+        {
+          return StatusCode(500, new { error = "Database connection failed", details = dbEx.Message });
+        }
+
         if (await _db.Users.AnyAsync(user => user.Email == dto.Email))
         {
           return BadRequest(new { error = "Email already exists" });//400
         }
 
         // Normalize gender input
-        var normalizedGender = string.IsNullOrEmpty(dto.Gender) ? "Male" : 
+        var normalizedGender = string.IsNullOrEmpty(dto.Gender) ? "Male" :
                               char.ToUpper(dto.Gender[0]) + dto.Gender.Substring(1).ToLower();
 
         var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);

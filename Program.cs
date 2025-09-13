@@ -18,7 +18,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var azureConnectionString = builder.Configuration["AzureStorage:ConnectionString"];
 if (!string.IsNullOrEmpty(azureConnectionString))
 {
-    builder.Services.AddSingleton(new BlobServiceClient(azureConnectionString));
+  builder.Services.AddSingleton(new BlobServiceClient(azureConnectionString));
 }
 
 // Session
@@ -46,19 +46,10 @@ builder.Services.AddCors(options =>
 {
   options.AddDefaultPolicy(corsBuilder =>
   {
-    if (builder.Environment.IsDevelopment())
-    {
-      corsBuilder.WithOrigins("http://localhost:3000", "https://localhost:3000")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
-    }
-    else
-    {
-      corsBuilder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    }
+    corsBuilder.WithOrigins("http://localhost:3000", "https://localhost:3000")
+             .AllowAnyMethod()
+             .AllowAnyHeader()
+             .AllowCredentials();
   });
 });
 
@@ -67,12 +58,12 @@ var app = builder.Build();
 // Add error handling for production
 if (app.Environment.IsProduction())
 {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+  app.UseExceptionHandler("/Error");
+  app.UseHsts();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+  app.UseDeveloperExceptionPage();
 }
 
 app.UseStaticFiles();  // Add this to serve static files
